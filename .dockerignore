@@ -1,0 +1,33 @@
+# 1. ملفات بايثون المؤقتة (مهم جداً للحذف)
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+
+
+venv
+.venv
+env
+
+# 3. ملفات git
+.git
+.gitignore
+
+# 4. ملفات البيئة والمتغيرات الحساسة
+# (إلا إذا كنت متعمداً نسخها، لكن الأفضل تجاهلها وتمريرها عبر docker-compose)
+.env
+.env.local
+
+# 5. ملفات IDE (محرر الكود)
+.vscode
+.idea
+
+# 6. قاعدة البيانات المحلية (إذا كنت تستخدم Postgres فلا تنسخ SQLite بالغلط)
+db.sqlite3
+*.sqlite3
+
+# 7. ملفات أخرى
+*.log
+Dockerfile
+docker-compose.yml
+.dockerignore
