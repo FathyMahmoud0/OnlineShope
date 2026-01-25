@@ -1,17 +1,20 @@
-from django.forms import ValidationError
+from .models import Address
 from django.shortcuts import render
 from rest_framework.decorators import api_view,permission_classes
 from rest_framework.response import Response
 from rest_framework import status
-from .serializer import RegistarSerializer,LoginSerializer , ChangePasswordSerializer ,ResetPasswordSerializer,PasswordResetConfirmSerializer
+from .serializer import RegistarSerializer,LoginSerializer , ChangePasswordSerializer ,ResetPasswordSerializer,PasswordResetConfirmSerializer , AddressSerializer
 from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate
 from django.contrib.auth import get_user_model
 from rest_framework.permissions import IsAuthenticated,AllowAny
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.middleware import csrf
 from .utils import generate_otp, send_activation_link, send_reset_password_link
 from django.utils import timezone
+
+from rest_framework import viewsets
+
 
 User = get_user_model()
 
@@ -59,7 +62,7 @@ def activate_account(request):
         if not user.is_active:
             if user.is_otp_valid(otp):
                 user.is_active = True
-                user.otp = None  # حرق الكود بعد الاستخدام
+                user.otp = None  
                 user.save()
                 
                 return Response({"message": "Account activated successfully! You can login now."}, status=status.HTTP_200_OK)
@@ -150,8 +153,7 @@ def forgot_password(request):
         try:
             user = User.objects.get(email=email)
         except User.DoesNotExist:
-            pass
-        
+            pass        
         user.otp = generate_otp()
         user.otp_created_at = timezone.now()
         user.save()
@@ -203,3 +205,15 @@ def user_logout(request):
     response.delete_cookie('access_token')
 
     return response
+
+
+
+class AddressViewSet(viewsets.ModelViewSet):
+    serializer_class = AddressSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Address.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)

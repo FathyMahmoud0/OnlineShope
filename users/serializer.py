@@ -1,4 +1,5 @@
 from django.forms import ValidationError
+from .models import Address
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from .utils import generate_otp 
@@ -120,3 +121,10 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
         return user
 
 
+
+class AddressSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Address
+        fields = ['id', 'country', 'city', 'street', 'building_number', 'phone', 'is_default']
+    
+    
