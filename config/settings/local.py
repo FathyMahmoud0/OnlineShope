@@ -1,13 +1,12 @@
-# config/settings/local.py
-from .base import * 
+import os
+import dj_database_url  
+from .base import *
 
-DEBUG = True
-SECRET_KEY = 'django-insecure-dev-key'
-ALLOWED_HOSTS = ["localhost", "0.0.0.0", "127.0.0.1"]
+
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': dj_database_url.config(
+        default=os.environ.get('DATABASE_URL'),
+        conn_max_age=600
+    )
 }
