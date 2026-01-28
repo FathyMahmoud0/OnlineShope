@@ -4,7 +4,7 @@ from django.utils.text import slugify
 class Category(models.Model):
     name = models.CharField(max_length=100)
     slug = models.SlugField(unique=True, blank=True, null=True)
-    image = models.ImageField(upload_to='categories/', blank=True, null=True)
+    image = models.ImageField(upload_to='categories/photos', blank=True, null=True)
     
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -51,7 +51,7 @@ class Product(models.Model):
 
 class ProductImage(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='images')
-    image = models.ImageField(upload_to='products/')
+    image = models.ImageField(upload_to='products/photos')
     is_main = models.BooleanField(default=False) 
 
     def __str__(self):
