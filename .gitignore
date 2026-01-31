@@ -23,3 +23,4 @@ Thumbs.db
 .idea/
 
 faiss_index
+h -f origin ai-versiongit push -f origin a
