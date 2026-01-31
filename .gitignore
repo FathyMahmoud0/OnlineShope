@@ -21,3 +21,5 @@ staticfiles/
 Thumbs.db
 .vscode/
 .idea/
+
+faiss_index
