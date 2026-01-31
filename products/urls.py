@@ -14,4 +14,5 @@ router.register(r'images', ProductImageViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
+    path('ai_search/', views.ai_search_view, name='ai-search'),
 ]

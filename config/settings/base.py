@@ -2,11 +2,9 @@
 import environ
 from pathlib import Path
 import os
-
 import dj_database_url
 
 env = environ.Env()
-
 
 
 
@@ -28,6 +26,8 @@ environ.Env.read_env(BASE_DIR / '.env')
 # ALLOWED_HOSTS = []
 
 DEBUG = env.bool('DEBUG', default=False)
+
+AI_INDEX_PATH = os.path.join(BASE_DIR, 'faiss_index') 
 
 # قراءة المفتاح السري
 # هنا نطلب منه رفع خطأ (Crash) إذا لم يجد المفتاح، لأنه لا يمكن تشغيل الموقع بدونه
@@ -169,3 +169,11 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 AUTH_USER_MODEL = 'users.CustomUser'
+
+CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://redis:6379/0')
+CELERY_RESULT_BACKEND = os.environ.get('CELERY_BROKER_URL', 'redis://redis:6379/0')
+
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'UTC'

@@ -47,7 +47,12 @@ class Product(models.Model):
     @property
     def has_discount(self):
         return self.discount_price is not None and self.discount_price < self.price
-
+    
+    @property
+    def text_for_embedding(self):
+     
+        category_name = self.category.name if self.category else ""
+        return f"{self.name} {self.description} {category_name}"
 
 class ProductImage(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='images')
