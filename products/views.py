@@ -6,14 +6,16 @@ from .serializer import (
     CategorySerializer, 
     ProductListSerializer, 
     ProductDetailSerializer,
-    ProductImageSerializer
+    ProductImageSerializer,
+    ReviewSerializer
+    
 )
-
+from django.db.models import Avg , Count
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny , IsAuthenticated
 from rest_framework import status
-from .models import Product
+from .models import Product , Review
 from .serializer import ProductListSerializer
 from .ai import AISearchEngine
 
@@ -102,3 +104,55 @@ def ai_search_view(request):
     except Exception as e:
         print(f"ERROR: {e}")
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def add_review(request, product_id):
+    try:
+        product = Product.objects.get(id=product_id)
+    except Product.DoesNotExist:
+        return Response({"error": "Product not found"}, status=404)
+
+    if Review.objects.filter(user=request.user, product=product).exists():
+        return Response({"error": "You have already reviewed this product"}, status=400)
+
+    is_verified = True 
+
+    serializer = ReviewSerializer(data=request.data, context={'request': request})
+    if serializer.is_valid():
+        serializer.save(user=request.user, product=product, is_verified=is_verified)
+        return Response(serializer.data, status=201)
+    
+    return Response(serializer.errors, status=400)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def toggle_review_like(request, review_id):
+    try:
+        review = Review.objects.get(id=review_id)
+    except Review.DoesNotExist:
+        return Response({"error": "Review not found"}, status=404)
+
+    user = request.user
+    if review.likes.filter(id=user.id).exists():
+        review.likes.remove(user)
+        return Response({"status": "unliked", "likes_count": review.total_likes()})
+    else:
+        review.likes.add(user)
+        return Response({"status": "liked", "likes_count": review.total_likes()})
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_product_reviews(request, product_id):
+    
+    reviews = Review.objects.filter(product_id=product_id).annotate(
+        likes_count_db=Count('likes')
+    ).order_by('-likes_count_db', '-created_at')
+        
+    serializer = ReviewSerializer(reviews, many=True, context={'request': request})
+    avg_rating = reviews.aggregate(Avg('rating'))['rating__avg']
+
+    return Response({
+        "average_rating": round(avg_rating, 1) if avg_rating else 0,
+        "total_reviews": reviews.count(),
+        "reviews": serializer.data
+    })

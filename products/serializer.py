@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Category, Product, ProductImage
 from django.conf import settings
+from .models import Review
 
 class ProductImageSerializer(serializers.ModelSerializer):
     class Meta:
@@ -92,3 +93,21 @@ class ProductDetailSerializer(serializers.ModelSerializer):
 
     def get_text_for_embedding(self, obj):
         return f"{obj.name} {obj.description} {obj.category.name}"
+    
+    
+
+class ReviewSerializer(serializers.ModelSerializer):
+    user = serializers.StringRelatedField(read_only=True)
+    likes_count = serializers.IntegerField(source='total_likes', read_only=True)
+    is_liked_by_user = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Review
+        fields = ['id', 'user', 'product', 'rating', 'comment', 'image', 'is_verified', 'likes_count', 'is_liked_by_user', 'created_at']
+        read_only_fields = ['is_verified', 'product', 'user']
+
+    def get_is_liked_by_user(self, obj):
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            return obj.likes.filter(id=request.user.id).exists()
+        return False

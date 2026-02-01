@@ -1,5 +1,7 @@
+from django.conf import settings
 from django.db import models
 from django.utils.text import slugify
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 class Category(models.Model):
     name = models.CharField(max_length=100)
@@ -61,3 +63,18 @@ class ProductImage(models.Model):
 
     def __str__(self):
         return f"Image for {self.product.name}"
+class Review(models.Model):
+    product = models.ForeignKey('Product', on_delete=models.CASCADE, related_name='reviews')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    rating = models.IntegerField(default=0, validators=[MinValueValidator(1), MaxValueValidator(5)])
+    comment = models.TextField(blank=True, null=True)
+    image = models.ImageField(upload_to='products/photos/review_images', blank=True, null=True)
+    is_verified = models.BooleanField(default=False)
+    likes = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='review_likes', blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def total_likes(self):
+        return self.likes.count()
+
+    def __str__(self):
+        return f"{self.rating} Stars - {self.product.name}"
